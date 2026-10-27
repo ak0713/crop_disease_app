@@ -130,6 +130,128 @@ async def get_weather(lat: float = 26.6528, lon: float = 92.7926):
         "irrigation_forecast": forecast_list
     }
 
+
+# --- EXPERT TREATMENT & COMMERCE DATABASE (ALL TOMATO & POTATO DISEASES) ---
+TREATMENT_DB = {
+    # ---------------- TOMATO DISEASES ----------------
+    "Tomato___Bacterial_spot": {
+        "simple_advice": "Bacterial spot causes small, dark, water-soaked spots. Copper sprays are essential to stop the spread.",
+        "chemical_pesticide": "Blitox 50 (Copper Oxychloride) + Streptocycline",
+        "dosage": "3g Blitox + 1g Streptocycline per 10 Liters of water.",
+        "organic_alternative": "Diluted sour buttermilk spray.",
+        "best_price_link": "https://www.bighaat.com/products/blitox-fungicide",
+        "est_price": "₹280"
+    },
+    "Tomato___Early_blight": {
+        "simple_advice": "Early Blight causes target-like spots on lower leaves. It spreads upward.",
+        "chemical_pesticide": "Amistar Top or SCORE Fungicide",
+        "dosage": "Mix 1 ml per Liter of water.",
+        "organic_alternative": "Bacillus subtilis spray or Neem Oil.",
+        "best_price_link": "https://www.bighaat.com/products/amistar-top-fungicide",
+        "est_price": "₹450"
+    },
+    "Tomato___Late_blight": {
+        "simple_advice": "Late Blight spreads extremely fast in wet weather. It destroys leaves and rots the fruit.",
+        "chemical_pesticide": "Ridomil Gold (Mancozeb 64% + Metalaxyl 8%)",
+        "dosage": "Mix 2 grams per Liter of water and spray.",
+        "organic_alternative": "Spray Copper Fungicide or 5% Neem Oil solution.",
+        "best_price_link": "https://www.bighaat.com/products/ridomil-gold-fungicide",
+        "est_price": "₹350"
+    },
+    "Tomato___Leaf_Mold": {
+        "simple_advice": "Appears as pale green spots on the upper leaf with olive-green mold underneath.",
+        "chemical_pesticide": "Roko Fungicide (Thiophanate Methyl)",
+        "dosage": "Mix 1 gram per Liter of water.",
+        "organic_alternative": "Increase ventilation and apply Neem Oil.",
+        "best_price_link": "https://www.bighaat.com/products/roko-fungicide",
+        "est_price": "₹150"
+    },
+    "Tomato___Septoria_leaf_spot": {
+        "simple_advice": "Causes numerous small circular spots with dark borders. Remove infected leaves immediately.",
+        "chemical_pesticide": "Kavach (Chlorothalonil 75% WP)",
+        "dosage": "Mix 2 grams per Liter of water.",
+        "organic_alternative": "Neem oil or Copper soap.",
+        "best_price_link": "https://www.bighaat.com/products/kavach-fungicide",
+        "est_price": "₹420"
+    },
+    "Tomato___Spider_mites Two-spotted_spider_mite": {
+        "simple_advice": "Mites suck sap, causing leaves to look speckled and yellow. Look for fine webbing under leaves.",
+        "chemical_pesticide": "Oberon (Spiromesifen) or Abamectin",
+        "dosage": "Mix 1 ml per Liter of water.",
+        "organic_alternative": "Horticultural oil or insecticidal soap.",
+        "best_price_link": "https://www.bighaat.com/products/oberon-insecticide",
+        "est_price": "₹650"
+    },
+    "Tomato___Target_Spot": {
+        "simple_advice": "Causes dark brown lesions with concentric rings. High humidity favors this fungus.",
+        "chemical_pesticide": "Nativo (Tebuconazole + Trifloxystrobin)",
+        "dosage": "Mix 0.5 grams per Liter of water.",
+        "organic_alternative": "Ensure good airflow, avoid overhead watering, and apply Neem Oil.",
+        "best_price_link": "https://www.bighaat.com/products/nativo-fungicide",
+        "est_price": "₹650"
+    },
+    "Tomato___Tomato_Yellow_Leaf_Curl_Virus": {
+        "simple_advice": "A viral disease spread by whiteflies. Leaves curl upward and turn pale yellow.",
+        "chemical_pesticide": "Confidor (Imidacloprid) to kill the vector whiteflies",
+        "dosage": "Mix 0.5 ml per Liter of water.",
+        "organic_alternative": "Yellow sticky traps and Neem Oil spray.",
+        "best_price_link": "https://www.bighaat.com/products/confidor-insecticide",
+        "est_price": "₹300"
+    },
+    "Tomato___Tomato_mosaic_virus": {
+        "simple_advice": "There is no cure for mosaic virus. Uproot and destroy infected plants immediately.",
+        "chemical_pesticide": "None (Viral Infection)",
+        "dosage": "N/A",
+        "organic_alternative": "Sanitize all farming tools. Wash hands with milk/soap before handling.",
+        "best_price_link": "https://www.bighaat.com/search?q=Neem+Oil",
+        "est_price": "₹200 (For Preventive Neem Oil)"
+    },
+    "Tomato___healthy": {
+        "simple_advice": "Your tomato crop is completely healthy! Keep monitoring it weekly.",
+        "chemical_pesticide": "None needed.",
+        "dosage": "N/A",
+        "organic_alternative": "Maintain standard compost and watering routine.",
+        "best_price_link": "",
+        "est_price": ""
+    },
+
+    # ---------------- POTATO DISEASES ----------------
+    "Potato___Early_blight": {
+        "simple_advice": "Early Blight causes brown spots with concentric rings on potato leaves.",
+        "chemical_pesticide": "Amistar Top or SCORE Fungicide",
+        "dosage": "Mix 1 ml per Liter of water.",
+        "organic_alternative": "Neem Oil.",
+        "best_price_link": "https://www.bighaat.com/products/amistar-top-fungicide",
+        "est_price": "₹450"
+    },
+    "Potato___Late_blight": {
+        "simple_advice": "Late Blight will rapidly kill potato vines and rot the tubers underground.",
+        "chemical_pesticide": "Ridomil Gold or Curzate M8",
+        "dosage": "Mix 2.5 grams per Liter of water.",
+        "organic_alternative": "Copper-based organic sprays.",
+        "best_price_link": "https://www.bighaat.com/products/ridomil-gold-fungicide",
+        "est_price": "₹350"
+    },
+    "Potato___healthy": {
+        "simple_advice": "Your potato crop is completely healthy! Keep monitoring it weekly.",
+        "chemical_pesticide": "None needed.",
+        "dosage": "N/A",
+        "organic_alternative": "Maintain standard compost and watering routine.",
+        "best_price_link": "",
+        "est_price": ""
+    },
+    
+    # ---------------- GLOBAL FALLBACK ----------------
+    "healthy": {
+        "simple_advice": "Your crop is completely healthy! Keep monitoring it weekly.",
+        "chemical_pesticide": "None needed.",
+        "dosage": "N/A",
+        "organic_alternative": "Maintain standard compost and watering routine.",
+        "best_price_link": "",
+        "est_price": ""
+    }
+}
+
 # --- MASTER LOGIC ENGINE ENDPOINT ---
 
 @app.post("/diagnose")
@@ -238,12 +360,34 @@ async def diagnose_and_advise(
             print(f"--> Translation failed: {e}")
     # -----------------------------------------
 
+
+   # -----------------------------------------
+    # Translation block ends above this line
+
+    # --- EXPERT TREATMENT LOOKUP ---
+    # We MUST use 'detected_disease' (original English) to look up the DB safely!
+    treatment_info = TREATMENT_DB.get(detected_disease)
+
+    # If somehow a disease isn't found, generate a dynamic smart-search link!
+    if not treatment_info:
+        clean_disease_name = detected_disease.split('___')[-1]
+        search_query = clean_disease_name.replace('_', '+')
+        
+        treatment_info = {
+            "simple_advice": "Disease detected. Isolate the plant and monitor closely.",
+            "chemical_pesticide": "Broad-Spectrum Treatment",
+            "dosage": "Consult local vendor",
+            "organic_alternative": "Neem Oil Spray (5ml per Liter)",
+            "best_price_link": f"https://www.bighaat.com/search?q={search_query}",
+            "est_price": "Check Online"
+        }
+
     # 6. RETURN FINAL PACKAGE
     return {
         "status": "success",
         "record_id": new_record.id,
         "diagnosis": {
-            "disease": final_disease,
+            "disease": final_disease, # Translated disease name for the UI
             "confidence": f"{confidence}%",
             "original_ai_guess": ai_raw_prediction
         },
@@ -251,5 +395,6 @@ async def diagnose_and_advise(
             "average_humidity": f"{avg_humidity:.1f}%",
             "average_temperature": f"{avg_temp:.1f}°C"
         },
-        "farmer_instructions": final_warnings
+        "farmer_instructions": final_warnings, # Translated warnings
+        "expert_treatment": treatment_info # <--- THIS SENDS THE PESTICIDES TO FLUTTER!
     }
