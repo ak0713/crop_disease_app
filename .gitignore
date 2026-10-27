@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+*.db
+*.pt
+*.jpg
+*.JPG
+*.png
+*.jpeg
+raw_data/
+PlantVillage/
+dataset/
+*.zip
