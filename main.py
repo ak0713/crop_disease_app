@@ -24,6 +24,11 @@ db_models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Crop Disease AI Backend")
 
+from fastapi.staticfiles import StaticFiles
+
+# This allows Flutter to view the images securely via HTTP
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 # --- CORS SETUP ---
 app.add_middleware(
     CORSMiddleware,
@@ -249,6 +254,15 @@ TREATMENT_DB = {
         "organic_alternative": "Maintain standard compost and watering routine.",
         "best_price_link": "",
         "est_price": ""
+    },
+    
+    "Unrecognized": {
+        "simple_advice": "INVALID IMAGE: We couldn't clearly recognize a crop leaf in this photo. Please take a clear, close-up photo of the affected plant.",
+        "chemical_pesticide": "None needed.",
+        "dosage": "N/A",
+        "organic_alternative": "N/A",
+        "best_price_link": "",
+        "est_price": ""
     }
 }
 
@@ -263,7 +277,7 @@ async def diagnose_and_advise(
     lang: str = "en",
     db: Session = Depends(get_db)
 ):
-    # 1. RUN THE ML MODEL
+   # 1. RUN THE ML MODEL
     image_bytes = await file.read()
     img_tensor = process_image(image_bytes)
     
@@ -275,15 +289,20 @@ async def diagnose_and_advise(
     ai_raw_prediction = classes[top_catid[0]]
     confidence = round(float(top_prob[0]) * 100, 2)
     
-    # SMART OVERRIDE LOGIC
-    if "___" in ai_raw_prediction:
-        predicted_plant, predicted_disease = ai_raw_prediction.split("___")
-        if crop_type != "Unknown":
-            detected_disease = f"{crop_type}___{predicted_disease}"
+    # --- NEW: OUT-OF-DISTRIBUTION CHECK ---
+    if confidence < 75.0:
+        detected_disease = "Unrecognized"
+        ai_raw_prediction = "Unrecognized"
+    else:
+        # SMART OVERRIDE LOGIC
+        if "___" in ai_raw_prediction:
+            predicted_plant, predicted_disease = ai_raw_prediction.split("___")
+            if crop_type != "Unknown":
+                detected_disease = f"{crop_type}___{predicted_disease}"
+            else:
+                detected_disease = ai_raw_prediction
         else:
             detected_disease = ai_raw_prediction
-    else:
-        detected_disease = ai_raw_prediction
 
     # 2. FETCH THE WEATHER
     weather_url = (
@@ -450,3 +469,78 @@ async def get_mandi_prices():
             }
         ]
     }
+
+from typing import List
+from fastapi import Form, UploadFile, File, Depends
+from sqlalchemy.orm import Session, joinedload
+import os
+
+# Create directory for forum uploads if it doesn't exist
+os.makedirs("uploads", exist_ok=True)
+
+@app.post("/forum/create_post")
+async def create_forum_post(
+    farmer_name: str = Form(...),
+    description: str = Form(...),
+    files: List[UploadFile] = File(...),
+    db: Session = Depends(get_db)
+):
+    new_post = db_models.CommunityPost(farmer_name=farmer_name, description=description)
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
+
+    for file in files:
+        file_location = f"uploads/forum_{file.filename}"
+        with open(file_location, "wb+") as file_object:
+            file_object.write(await file.read())
+        
+        new_image = db_models.PostImage(post_id=new_post.id, image_path=file_location)
+        db.add(new_image)
+    
+    db.commit()
+    return {"status": "success", "post_id": new_post.id}
+
+@app.get("/forum/feed")
+async def get_forum_feed(db: Session = Depends(get_db)):
+    posts = db.query(db_models.CommunityPost).options(
+        joinedload(db_models.CommunityPost.images),
+        joinedload(db_models.CommunityPost.comments)
+    ).order_by(db_models.CommunityPost.timestamp.desc()).all()
+    
+    feed = [{
+        "id": p.id, # This ID must be present and unique
+        "farmer_name": p.farmer_name,
+        "description": p.description,
+        "images": [img.image_path for img in p.images],
+        "comments": [{"author": c.author, "text": c.text} for c in p.comments]
+    } for p in posts]
+    
+    return {"status": "success", "posts": feed}
+
+@app.post("/forum/add_comment")
+async def add_forum_comment(
+    post_id: int = Form(...),
+    author: str = Form(...),
+    text: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    new_comment = db_models.PostComment(post_id=post_id, author=author, text=text)
+    db.add(new_comment)
+    db.commit()
+    return {"status": "success"}
+
+@app.delete("/forum/delete_post/{post_id}")
+async def delete_forum_post(post_id: int, db: Session = Depends(get_db)):
+    post = db.query(db_models.CommunityPost).filter(db_models.CommunityPost.id == post_id).first()
+    if not post:
+        return {"status": "error", "message": "Post not found"}
+    
+    # Safely delete attached comments and images first
+    db.query(db_models.PostComment).filter(db_models.PostComment.post_id == post_id).delete()
+    db.query(db_models.PostImage).filter(db_models.PostImage.post_id == post_id).delete()
+    
+    # Delete the main post
+    db.delete(post)
+    db.commit()
+    return {"status": "success"}
