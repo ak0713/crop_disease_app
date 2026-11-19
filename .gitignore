@@ -10,3 +10,5 @@ raw_data/
 PlantVillage/
 dataset/
 *.zip
+venv/
+*.zip
