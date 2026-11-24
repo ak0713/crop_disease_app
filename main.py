@@ -304,24 +304,32 @@ async def diagnose_and_advise(
         else:
             detected_disease = ai_raw_prediction
 
-    # 2. FETCH THE WEATHER
+   # 2. FETCH THE WEATHER (With Safe Fallback)
+    avg_temp = 27.0
+    avg_humidity = 85.0
+    total_rain = 0.0
+    avg_soil_moisture = 0.45
+
     weather_url = (
         f"https://api.open-meteo.com/v1/forecast?"
         f"latitude={lat}&longitude={lon}"
         f"&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,rain,soil_moisture_0_to_7cm"
         f"&forecast_hours=5"
     )
-    async with httpx.AsyncClient() as client:
-        weather_resp = await client.get(weather_url)
-        
-    weather_data = weather_resp.json()
-    hourly = weather_data["hourly"]
-    
-    # Calculate 5-hour averages
-    avg_temp = sum(hourly["temperature_2m"]) / 5
-    avg_humidity = sum(hourly["relative_humidity_2m"]) / 5
-    total_rain = sum(hourly["rain"])
-    avg_soil_moisture = sum(hourly["soil_moisture_0_to_7cm"]) / 5
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            weather_resp = await client.get(weather_url)
+            
+        if weather_resp.status_code == 200:
+            weather_data = weather_resp.json()
+            if "hourly" in weather_data:
+                hourly = weather_data["hourly"]
+                avg_temp = sum(hourly["temperature_2m"]) / 5
+                avg_humidity = sum(hourly["relative_humidity_2m"]) / 5
+                total_rain = sum(hourly["rain"])
+                avg_soil_moisture = sum(hourly["soil_moisture_0_to_7cm"]) / 5
+    except Exception as e:
+        print(f"Weather API fallback triggered: {e}")
     
     # 3. THE LOGIC ENGINE
     warnings = []
