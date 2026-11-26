@@ -517,11 +517,23 @@ async def get_forum_feed(db: Session = Depends(get_db)):
     ).order_by(db_models.CommunityPost.timestamp.desc()).all()
     
     feed = [{
-        "id": p.id, # This ID must be present and unique
+        "id": p.id,
         "farmer_name": p.farmer_name,
         "description": p.description,
         "images": [img.image_path for img in p.images],
-        "comments": [{"author": c.author, "text": c.text} for c in p.comments]
+        "comments": sorted(
+            [
+                {
+                    "id": c.id,
+                    "author": c.author,
+                    "text": c.text,
+                    "upvotes": c.upvotes or 0,
+                }
+                for c in p.comments
+            ],
+            key=lambda x: x["upvotes"],
+            reverse=True,
+        ),
     } for p in posts]
     
     return {"status": "success", "posts": feed}
@@ -552,3 +564,22 @@ async def delete_forum_post(post_id: int, db: Session = Depends(get_db)):
     db.delete(post)
     db.commit()
     return {"status": "success"}
+
+@app.post("/forum/rate_comment/{comment_id}")
+async def rate_comment(
+    comment_id: int,
+    delta: int = Form(...),
+    db: Session = Depends(get_db)
+):
+    if delta not in (-2, -1, 1, 2):
+        return {"status": "error", "message": "Invalid vote change"}
+
+    comment = db.query(db_models.PostComment).filter(
+        db_models.PostComment.id == comment_id
+    ).first()
+    if not comment:
+        return {"status": "error", "message": "Comment not found"}
+
+    comment.upvotes = (comment.upvotes or 0) + delta
+    db.commit()
+    return {"status": "success", "new_score": comment.upvotes}

@@ -47,4 +47,6 @@ class PostComment(Base):
     post_id = Column(Integer, ForeignKey("community_posts.id"))
     author = Column(String)
     text = Column(String)
+    upvotes = Column(Integer, default=0)  # <-- NEW COLUMN
+    
     post = relationship("CommunityPost", back_populates="comments")
